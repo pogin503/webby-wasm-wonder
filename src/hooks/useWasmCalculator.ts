@@ -1,11 +1,13 @@
 
 import { useState, useEffect } from 'react';
+import { jsCalculator } from '../utils/jsCalculator';
 
 interface WasmExports {
   add: (a: number, b: number) => number;
   subtract: (a: number, b: number) => number;
   multiply: (a: number, b: number) => number;
   divide: (a: number, b: number) => number;
+  ackermann: (m: number, n: number) => number;
 }
 
 export const useWasmCalculator = () => {
@@ -19,10 +21,11 @@ export const useWasmCalculator = () => {
         // WebAssemblyモジュールがロードされるまでのプレースホルダー
         // 実際のWasmモジュールが用意できたら、ここを更新します
         setWasmModule({
-          add: (a: number, b: number) => a + b,
-          subtract: (a: number, b: number) => a - b,
-          multiply: (a: number, b: number) => a * b,
-          divide: (a: number, b: number) => a / b,
+          add: jsCalculator.add,
+          subtract: jsCalculator.subtract,
+          multiply: jsCalculator.multiply,
+          divide: jsCalculator.divide,
+          ackermann: jsCalculator.ackermann,
         });
         setLoading(false);
       } catch (err) {

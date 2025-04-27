@@ -5,7 +5,6 @@ import { jsCalculator } from '../utils/jsCalculator';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Card } from './ui/card';
-import { Separator } from './ui/separator';
 
 interface CalculationResult {
   result: number | null;
@@ -15,7 +14,7 @@ interface CalculationResult {
 const WasmCalculator = () => {
   const [num1, setNum1] = useState<string>('');
   const [num2, setNum2] = useState<string>('');
-  const [operation, setOperation] = useState<'add' | 'subtract' | 'multiply' | 'divide'>('add');
+  const [operation, setOperation] = useState<'add' | 'subtract' | 'multiply' | 'divide' | 'ackermann'>('add');
   const [wasmResult, setWasmResult] = useState<CalculationResult>({ result: null, executionTime: 0 });
   const [jsResult, setJsResult] = useState<CalculationResult>({ result: null, executionTime: 0 });
   const { wasmModule, loading, error } = useWasmCalculator();
@@ -35,53 +34,68 @@ const WasmCalculator = () => {
     // WebAssembly calculation
     const wasmStartTime = performance.now();
     let wasmCalculatedResult: number;
-    switch (operation) {
-      case 'add':
-        wasmCalculatedResult = wasmModule.add(a, b);
-        break;
-      case 'subtract':
-        wasmCalculatedResult = wasmModule.subtract(a, b);
-        break;
-      case 'multiply':
-        wasmCalculatedResult = wasmModule.multiply(a, b);
-        break;
-      case 'divide':
-        if (b === 0) {
-          setWasmResult({ result: null, executionTime: 0 });
-          setJsResult({ result: null, executionTime: 0 });
-          return;
-        }
-        wasmCalculatedResult = wasmModule.divide(a, b);
-        break;
+    try {
+      switch (operation) {
+        case 'add':
+          wasmCalculatedResult = wasmModule.add(a, b);
+          break;
+        case 'subtract':
+          wasmCalculatedResult = wasmModule.subtract(a, b);
+          break;
+        case 'multiply':
+          wasmCalculatedResult = wasmModule.multiply(a, b);
+          break;
+        case 'divide':
+          if (b === 0) {
+            throw new Error('Division by zero');
+          }
+          wasmCalculatedResult = wasmModule.divide(a, b);
+          break;
+        case 'ackermann':
+          wasmCalculatedResult = wasmModule.ackermann(a, b);
+          break;
+      }
+      const wasmEndTime = performance.now();
+      setWasmResult({
+        result: wasmCalculatedResult,
+        executionTime: wasmEndTime - wasmStartTime
+      });
+    } catch (error) {
+      setWasmResult({ result: null, executionTime: 0 });
     }
-    const wasmEndTime = performance.now();
-    setWasmResult({
-      result: wasmCalculatedResult,
-      executionTime: wasmEndTime - wasmStartTime
-    });
 
     // JavaScript calculation
     const jsStartTime = performance.now();
     let jsCalculatedResult: number;
-    switch (operation) {
-      case 'add':
-        jsCalculatedResult = jsCalculator.add(a, b);
-        break;
-      case 'subtract':
-        jsCalculatedResult = jsCalculator.subtract(a, b);
-        break;
-      case 'multiply':
-        jsCalculatedResult = jsCalculator.multiply(a, b);
-        break;
-      case 'divide':
-        jsCalculatedResult = jsCalculator.divide(a, b);
-        break;
+    try {
+      switch (operation) {
+        case 'add':
+          jsCalculatedResult = jsCalculator.add(a, b);
+          break;
+        case 'subtract':
+          jsCalculatedResult = jsCalculator.subtract(a, b);
+          break;
+        case 'multiply':
+          jsCalculatedResult = jsCalculator.multiply(a, b);
+          break;
+        case 'divide':
+          if (b === 0) {
+            throw new Error('Division by zero');
+          }
+          jsCalculatedResult = jsCalculator.divide(a, b);
+          break;
+        case 'ackermann':
+          jsCalculatedResult = jsCalculator.ackermann(a, b);
+          break;
+      }
+      const jsEndTime = performance.now();
+      setJsResult({
+        result: jsCalculatedResult,
+        executionTime: jsEndTime - jsStartTime
+      });
+    } catch (error) {
+      setJsResult({ result: null, executionTime: 0 });
     }
-    const jsEndTime = performance.now();
-    setJsResult({
-      result: jsCalculatedResult,
-      executionTime: jsEndTime - jsStartTime
-    });
   };
 
   if (loading) return <div>Loading...</div>;
@@ -108,7 +122,7 @@ const WasmCalculator = () => {
           />
         </div>
         
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <Button
             variant={operation === 'add' ? 'default' : 'secondary'}
             onClick={() => setOperation('add')}
@@ -136,6 +150,13 @@ const WasmCalculator = () => {
             className="flex-1"
           >
             ÷
+          </Button>
+          <Button
+            variant={operation === 'ackermann' ? 'default' : 'secondary'}
+            onClick={() => setOperation('ackermann')}
+            className="w-full mt-2"
+          >
+            Ackermann
           </Button>
         </div>
         
