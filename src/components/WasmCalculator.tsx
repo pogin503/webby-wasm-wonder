@@ -1,15 +1,23 @@
 
 import React, { useState } from 'react';
 import { useWasmCalculator } from '../hooks/useWasmCalculator';
+import { jsCalculator } from '../utils/jsCalculator';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Card } from './ui/card';
+import { Separator } from './ui/separator';
+
+interface CalculationResult {
+  result: number | null;
+  executionTime: number;
+}
 
 const WasmCalculator = () => {
   const [num1, setNum1] = useState<string>('');
   const [num2, setNum2] = useState<string>('');
   const [operation, setOperation] = useState<'add' | 'subtract' | 'multiply' | 'divide'>('add');
-  const [result, setResult] = useState<number | null>(null);
+  const [wasmResult, setWasmResult] = useState<CalculationResult>({ result: null, executionTime: 0 });
+  const [jsResult, setJsResult] = useState<CalculationResult>({ result: null, executionTime: 0 });
   const { wasmModule, loading, error } = useWasmCalculator();
 
   const calculate = () => {
@@ -19,30 +27,61 @@ const WasmCalculator = () => {
     const b = parseFloat(num2);
     
     if (isNaN(a) || isNaN(b)) {
-      setResult(null);
+      setWasmResult({ result: null, executionTime: 0 });
+      setJsResult({ result: null, executionTime: 0 });
       return;
     }
 
-    let calculatedResult: number;
+    // WebAssembly calculation
+    const wasmStartTime = performance.now();
+    let wasmCalculatedResult: number;
     switch (operation) {
       case 'add':
-        calculatedResult = wasmModule.add(a, b);
+        wasmCalculatedResult = wasmModule.add(a, b);
         break;
       case 'subtract':
-        calculatedResult = wasmModule.subtract(a, b);
+        wasmCalculatedResult = wasmModule.subtract(a, b);
         break;
       case 'multiply':
-        calculatedResult = wasmModule.multiply(a, b);
+        wasmCalculatedResult = wasmModule.multiply(a, b);
         break;
       case 'divide':
         if (b === 0) {
-          setResult(null);
+          setWasmResult({ result: null, executionTime: 0 });
+          setJsResult({ result: null, executionTime: 0 });
           return;
         }
-        calculatedResult = wasmModule.divide(a, b);
+        wasmCalculatedResult = wasmModule.divide(a, b);
         break;
     }
-    setResult(calculatedResult);
+    const wasmEndTime = performance.now();
+    setWasmResult({
+      result: wasmCalculatedResult,
+      executionTime: wasmEndTime - wasmStartTime
+    });
+
+    // JavaScript calculation
+    const jsStartTime = performance.now();
+    let jsCalculatedResult: number;
+    switch (operation) {
+      case 'add':
+        jsCalculatedResult = jsCalculator.add(a, b);
+        break;
+      case 'subtract':
+        jsCalculatedResult = jsCalculator.subtract(a, b);
+        break;
+      case 'multiply':
+        jsCalculatedResult = jsCalculator.multiply(a, b);
+        break;
+      case 'divide':
+        jsCalculatedResult = jsCalculator.divide(a, b);
+        break;
+    }
+    const jsEndTime = performance.now();
+    setJsResult({
+      result: jsCalculatedResult,
+      executionTime: jsEndTime - jsStartTime
+    });
   };
 
   if (loading) return <div>Loading...</div>;
@@ -50,7 +89,7 @@ const WasmCalculator = () => {
 
   return (
     <Card className="p-6 w-full max-w-md mx-auto bg-white/10 backdrop-blur">
-      <h2 className="text-2xl font-bold mb-4 text-purple-100">WebAssembly Calculator</h2>
+      <h2 className="text-2xl font-bold mb-4 text-purple-100">WebAssembly vs JavaScript Calculator</h2>
       <div className="space-y-4">
         <div className="flex gap-4">
           <Input
@@ -104,9 +143,19 @@ const WasmCalculator = () => {
           Calculate
         </Button>
         
-        {result !== null && (
-          <div className="text-2xl font-bold text-center py-4 text-white">
-            = {result}
+        {(wasmResult.result !== null || jsResult.result !== null) && (
+          <div className="space-y-4 text-white">
+            <div className="p-4 bg-white/5 rounded-lg">
+              <h3 className="font-semibold text-purple-200">WebAssembly</h3>
+              <p className="text-xl">Result: {wasmResult.result}</p>
+              <p className="text-sm text-purple-200">Time: {wasmResult.executionTime.toFixed(4)}ms</p>
+            </div>
+            
+            <div className="p-4 bg-white/5 rounded-lg">
+              <h3 className="font-semibold text-purple-200">JavaScript</h3>
+              <p className="text-xl">Result: {jsResult.result}</p>
+              <p className="text-sm text-purple-200">Time: {jsResult.executionTime.toFixed(4)}ms</p>
+            </div>
           </div>
         )}
       </div>
