@@ -5,6 +5,7 @@ import { jsCalculator } from '../utils/jsCalculator';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Card } from './ui/card';
+import { Calculator, Function } from 'lucide-react';
 
 interface CalculationResult {
   result: number | null;
@@ -111,52 +112,70 @@ const WasmCalculator = () => {
             value={num1}
             onChange={(e) => setNum1(e.target.value)}
             placeholder="First number"
-            className="bg-white/5 text-white"
+            className={`bg-white/5 text-white ${operation === 'ackermann' ? 'border-purple-500' : ''}`}
           />
           <Input
             type="number"
             value={num2}
             onChange={(e) => setNum2(e.target.value)}
             placeholder="Second number"
-            className="bg-white/5 text-white"
+            className={`bg-white/5 text-white ${operation === 'ackermann' ? 'border-purple-500' : ''}`}
           />
         </div>
         
-        <div className="flex gap-2 flex-wrap">
-          <Button
-            variant={operation === 'add' ? 'default' : 'secondary'}
-            onClick={() => setOperation('add')}
-            className="flex-1"
-          >
-            +
-          </Button>
-          <Button
-            variant={operation === 'subtract' ? 'default' : 'secondary'}
-            onClick={() => setOperation('subtract')}
-            className="flex-1"
-          >
-            -
-          </Button>
-          <Button
-            variant={operation === 'multiply' ? 'default' : 'secondary'}
-            onClick={() => setOperation('multiply')}
-            className="flex-1"
-          >
-            ×
-          </Button>
-          <Button
-            variant={operation === 'divide' ? 'default' : 'secondary'}
-            onClick={() => setOperation('divide')}
-            className="flex-1"
-          >
-            ÷
-          </Button>
+        {/* 通常の計算操作 */}
+        <div className="p-4 bg-white/5 rounded-lg">
+          <div className="flex items-center gap-2 mb-3">
+            <Calculator className="w-5 h-5 text-blue-300" />
+            <h3 className="text-blue-300 font-medium">Basic Operations</h3>
+          </div>
+          <div className="flex gap-2 flex-wrap">
+            <Button
+              variant={operation === 'add' ? 'default' : 'secondary'}
+              onClick={() => setOperation('add')}
+              className="flex-1"
+            >
+              +
+            </Button>
+            <Button
+              variant={operation === 'subtract' ? 'default' : 'secondary'}
+              onClick={() => setOperation('subtract')}
+              className="flex-1"
+            >
+              -
+            </Button>
+            <Button
+              variant={operation === 'multiply' ? 'default' : 'secondary'}
+              onClick={() => setOperation('multiply')}
+              className="flex-1"
+            >
+              ×
+            </Button>
+            <Button
+              variant={operation === 'divide' ? 'default' : 'secondary'}
+              onClick={() => setOperation('divide')}
+              className="flex-1"
+            >
+              ÷
+            </Button>
+          </div>
+        </div>
+
+        {/* アッカーマン関数セクション */}
+        <div className="p-4 bg-purple-900/30 rounded-lg border border-purple-500/30">
+          <div className="flex items-center gap-2 mb-3">
+            <Function className="w-5 h-5 text-purple-300" />
+            <h3 className="text-purple-300 font-medium">Ackermann Function</h3>
+          </div>
+          <p className="text-sm text-purple-200 mb-3">
+            Demonstrates computational intensity (try m=3, n=3)
+          </p>
           <Button
             variant={operation === 'ackermann' ? 'default' : 'secondary'}
             onClick={() => setOperation('ackermann')}
-            className="w-full mt-2"
+            className="w-full bg-purple-600 hover:bg-purple-700"
           >
-            Ackermann
+            Calculate Ackermann
           </Button>
         </div>
         
@@ -166,13 +185,13 @@ const WasmCalculator = () => {
         
         {(wasmResult.result !== null || jsResult.result !== null) && (
           <div className="space-y-4 text-white">
-            <div className="p-4 bg-white/5 rounded-lg">
+            <div className={`p-4 rounded-lg ${operation === 'ackermann' ? 'bg-purple-900/30 border border-purple-500/30' : 'bg-white/5'}`}>
               <h3 className="font-semibold text-purple-200">WebAssembly</h3>
               <p className="text-xl">Result: {wasmResult.result}</p>
               <p className="text-sm text-purple-200">Time: {wasmResult.executionTime.toFixed(4)}ms</p>
             </div>
             
-            <div className="p-4 bg-white/5 rounded-lg">
+            <div className={`p-4 rounded-lg ${operation === 'ackermann' ? 'bg-purple-900/30 border border-purple-500/30' : 'bg-white/5'}`}>
               <h3 className="font-semibold text-purple-200">JavaScript</h3>
               <p className="text-xl">Result: {jsResult.result}</p>
               <p className="text-sm text-purple-200">Time: {jsResult.executionTime.toFixed(4)}ms</p>
