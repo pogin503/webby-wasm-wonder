@@ -5,7 +5,7 @@ import { jsCalculator } from '../utils/jsCalculator';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Card } from './ui/card';
-import { Calculator, Function } from 'lucide-react';
+import { Calculator, Code } from 'lucide-react';
 
 interface CalculationResult {
   result: number | null;
@@ -164,7 +164,7 @@ const WasmCalculator = () => {
         {/* アッカーマン関数セクション */}
         <div className="p-4 bg-purple-900/30 rounded-lg border border-purple-500/30">
           <div className="flex items-center gap-2 mb-3">
-            <Function className="w-5 h-5 text-purple-300" />
+            <Code className="w-5 h-5 text-purple-300" />
             <h3 className="text-purple-300 font-medium">Ackermann Function</h3>
           </div>
           <p className="text-sm text-purple-200 mb-3">
