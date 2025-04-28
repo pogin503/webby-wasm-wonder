@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useWasmCalculator } from '../hooks/useWasmCalculator';
 import { jsCalculator } from '../utils/jsCalculator';
@@ -8,10 +7,12 @@ import { Card } from './ui/card';
 import { BasicOperations } from './calculator/BasicOperations';
 import { AckermannFunction } from './calculator/AckermannFunction';
 import { CalculationResults } from './calculator/CalculationResults';
+import type { PerformanceMetrics } from '../utils/performanceMonitor';
 
 interface CalculationResult {
   result: number | null;
   executionTime: number;
+  metrics?: PerformanceMetrics;
 }
 
 const WasmCalculator = () => {
@@ -72,26 +73,42 @@ const WasmCalculator = () => {
       switch (operation) {
         case 'add':
           jsCalculatedResult = jsCalculator.add(a, b);
+          setJsResult({
+            result: jsCalculatedResult,
+            executionTime: performance.now() - jsStartTime
+          });
           break;
         case 'subtract':
           jsCalculatedResult = jsCalculator.subtract(a, b);
+          setJsResult({
+            result: jsCalculatedResult,
+            executionTime: performance.now() - jsStartTime
+          });
           break;
         case 'multiply':
           jsCalculatedResult = jsCalculator.multiply(a, b);
+          setJsResult({
+            result: jsCalculatedResult,
+            executionTime: performance.now() - jsStartTime
+          });
           break;
         case 'divide':
           if (b === 0) throw new Error('Division by zero');
           jsCalculatedResult = jsCalculator.divide(a, b);
+          setJsResult({
+            result: jsCalculatedResult,
+            executionTime: performance.now() - jsStartTime
+          });
           break;
         case 'ackermann':
           jsCalculatedResult = jsCalculator.ackermann(a, b);
+          setJsResult({
+            result: jsCalculatedResult,
+            executionTime: performance.now() - jsStartTime,
+            metrics: jsCalculator.getPerformanceMetrics()
+          });
           break;
       }
-      const jsEndTime = performance.now();
-      setJsResult({
-        result: jsCalculatedResult,
-        executionTime: jsEndTime - jsStartTime
-      });
     } catch (error) {
       setJsResult({ result: null, executionTime: 0 });
     }
